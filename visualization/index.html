@@ -1,32 +1,14 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-	<script type="text/javascript">
-        function WebSocketTest() {
-            var messageContainer = document.getElementById("messages");
-            if ("WebSocket" in window) {
-                messageContainer.innerHTML = "WebSocket is supported by your Browser!";
-                var ws = new WebSocket("ws://localhost:12345/ws?Id=123456789");
-                ws.onopen = function() {
-                    ws.send("Message to send");
-                };
-                ws.onmessage = function (evt) {
-                    var received_msg = evt.data;
-                    messageContainer.innerHTML = "Message is received..." + received_msg;
-
-                };
-                ws.onclose = function() {
-                    messageContainer.innerHTML = "Connection is closed...";
-                };
-            } else {
-                messageContainer.innerHTML = "WebSocket NOT supported by your Browser!";
-            }
-        }
-        </script>
-    </head>
-    <body>
-        <a href="javascript:WebSocketTest()">Run WebSocket</a>
-        <div id="messages" style="height:200px;background:black;color:white;"></div>
-    </body>
+  <head>
+    <meta charset="utf-8">
+    <script src="/static/js/jquery-2.1.4.min.js"></script>
+    <script src="/static/js/underscore-min.js"></script>
+    <script src="/static/js/three.min.js"></script>
+    <script src="http://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <script src="/static/js/visualization.js"></script>
+  </body>
 </html>

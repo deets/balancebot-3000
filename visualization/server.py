@@ -1,15 +1,17 @@
+import os
+import threading
+from functools import partial
+
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-import threading
-import json
-from functools import partial
-
-import nanomsg
 
 from tornado.options import define, options, parse_command_line
 
-define("port", default=8888, help="run on the given port", type=int)
+import nanomsg
+
+define("port", default=12345, help="run on the given port", type=int)
+define("uri", default="tcp://192.168.2.102:5555", help="pull data from that pair socket", type=str)
 
 class IndexHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -40,30 +42,40 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             del self.CLIENTS[self.id]
 
 
-app = tornado.web.Application([
-    (r'/', IndexHandler),
-    (r'/ws', WebSocketHandler),
-])
-
-
 def imu_message_arrived(socket, *args):
     message = socket.recv()
     for wsh in WebSocketHandler.CLIENTS.values():
         wsh["write_message"](message)
 
 
-if __name__ == '__main__':
-
-    uri = "tcp://192.168.2.102:5555"
-    socket = nanomsg.Socket(nanomsg.PAIR)
-    socket.connect(uri)
-
+def main():
     parse_command_line()
+
+    settings = {
+        "static_path": os.path.join(os.path.dirname(__file__), "static"),
+    }
+
+    app = tornado.web.Application(
+        [
+            (r'/', IndexHandler),
+            (r'/ws', WebSocketHandler),
+        ],
+        **settings
+    )
+
+    socket = nanomsg.Socket(nanomsg.PAIR)
+    socket.connect(options.uri)
+
     app.listen(options.port)
     ioloop = tornado.ioloop.IOLoop.instance()
+
     ioloop.add_handler(
         socket.fd,
         partial(imu_message_arrived, socket),
         tornado.ioloop.IOLoop.READ | tornado.ioloop.IOLoop.WRITE | tornado.ioloop.IOLoop.ERROR
         )
     ioloop.start()
+
+
+if __name__ == '__main__':
+    main()
