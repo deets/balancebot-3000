@@ -5,7 +5,7 @@ function setupWebsocket(callback) {
     };
     ws.onmessage = function (evt) {
         var received_msg = evt.data;
-        callback(received_msg);
+        callback(JSON.parse(received_msg));
     };
     ws.onclose = function() {
         console.log("WS closed");
@@ -13,16 +13,20 @@ function setupWebsocket(callback) {
 }
 
 
-$(document).ready(function() {
+function setupScene() {
+    var scene_root = $("#3dview");
 
-
-    console.log("I'm ready!");
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+    var camera = new THREE.PerspectiveCamera(
+        75,
+        scene_root.width() /scene_root.height(),
+        0.1,
+        1000
+    );
 
     var renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+    renderer.setSize(scene_root.width(), scene_root.height());
+    scene_root.append(renderer.domElement);
 
     var geometry = new THREE.BoxGeometry( 5, 1, 5 );
     var material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
@@ -60,12 +64,72 @@ $(document).ready(function() {
         q.z = attitude[3];
         var m = new THREE.Matrix4();
         m.makeRotationFromQuaternion(q);
-        m.multiply(coordinateRemapMatrix);
+//        m.multiply(coordinateRemapMatrix);
         q.setFromRotationMatrix(m);
         cube.quaternion.copy(q);
     }
 
-    setupWebsocket(rotateCube);
-
     render();
-});
+}
+
+function setupGraph(root, margins) {
+    var margin = margins || {top: 20.5, right: 30, bottom: 30, left: 40.5};
+    var width = root.width() - margin.left - margin.right;
+    var height = root.height() - margin.top - margin.bottom;
+
+    var x = d3.scale.linear()
+            .range([0, width]);
+
+    var y = d3.scale.linear()
+            .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+    var line = d3.svg.line()
+            .x(function(d) { return x(d.timestamp); })
+            .y(function(d) { return y(d.value); });
+
+    var root_node = root.get(0);
+    var svg = d3.select(root_node).append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var data = [];
+    var xAxisNode = svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")");
+
+    var yAxisNode = svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("class", "title")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .text("Value");
+
+    var lineNode = svg.append("path")
+        .attr("class", "line")
+        .datum(data)
+        .attr("d", line);
+
+    function new_data_arrived(entry) {
+        data.push(entry);
+        x.domain(d3.extent(data, function(d) { return d.timestamp; }));
+        y.domain(d3.extent(data, function(d) { return d.value; }));
+        xAxisNode.call(xAxis);
+        yAxisNode.call(yAxis);
+        svg.select(".line")   // change the line
+            .attr("d", line(data));
+    };
+    return new_data_arrived;
+}
