@@ -28,7 +28,17 @@
 
     <script>
 $(document).ready(function() {
-  setupWebsocket(setupGraph($("#graph")));
+  var graph = setupGraph("#graph");
+  graph.line(
+     function(d) { return d.timestamp;},
+     function(d) { return d.value;},
+     "green"
+  ).line(
+     function(d) { return d.timestamp;},
+     function(d) { return d.value * 2;},
+     "yellow"
+  );
+  setupWebsocket(graph.dataCallback);
 //  setupScene();
 });
 </script>

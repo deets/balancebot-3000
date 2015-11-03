@@ -73,29 +73,26 @@ function setupScene() {
 }
 
 function setupGraph(root, margins) {
+    root = $(root);
+    var root_node = root.get(0);
     var margin = margins || {top: 20.5, right: 30, bottom: 30, left: 40.5};
     var width = root.width() - margin.left - margin.right;
     var height = root.height() - margin.top - margin.bottom;
 
-    var x = d3.scale.linear()
+    var xScale = d3.scale.linear()
             .range([0, width]);
 
-    var y = d3.scale.linear()
+    var yScale = d3.scale.linear()
             .range([height, 0]);
 
     var xAxis = d3.svg.axis()
-            .scale(x)
+            .scale(xScale)
             .orient("bottom");
 
     var yAxis = d3.svg.axis()
-            .scale(y)
+            .scale(yScale)
             .orient("left");
 
-    var line = d3.svg.line()
-            .x(function(d) { return x(d.timestamp); })
-            .y(function(d) { return y(d.value); });
-
-    var root_node = root.get(0);
     var svg = d3.select(root_node).append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -117,19 +114,53 @@ function setupGraph(root, margins) {
             .attr("dy", ".71em")
             .text("Value");
 
-    var lineNode = svg.append("path")
-        .attr("class", "line")
-        .datum(data)
-        .attr("d", line);
+    var lines = [];
+    var line_id = 0;
 
-    function new_data_arrived(entry) {
-        data.push(entry);
-        x.domain(d3.extent(data, function(d) { return d.timestamp; }));
-        y.domain(d3.extent(data, function(d) { return d.value; }));
-        xAxisNode.call(xAxis);
-        yAxisNode.call(yAxis);
-        svg.select(".line")   // change the line
-            .attr("d", line(data));
+    graph = {
+        dataCallback : function (entry) {
+            var self = this;
+            data.push(entry);
+            var xdomain = xScale.domain();
+            var ydomain = yScale.domain();
+            _.each(lines, function(line) {
+                xdomain.push(line.xf(entry));
+                ydomain.push(line.yf(entry));
+            });
+            xScale.domain(d3.extent(xdomain));
+            yScale.domain(d3.extent(ydomain));
+            xAxisNode.call(xAxis);
+            yAxisNode.call(yAxis);
+            _.each(lines, function(line) {
+                svg.select("#" + line.id)   // change the line
+                    .attr("d", line.line(data));
+            });
+        },
+
+        line : function(xf, yf, color) {
+            var self = this;
+            var id = "line-" + line_id++;
+
+            var line = d3.svg.line()
+                    .x(function(d) { return xScale(xf(d)); })
+                    .y(function(d) { return yScale(yf(d)); });
+
+            svg.append("path")
+                .attr("class", "line")
+                .attr("style", "stroke: " + color)
+                .attr("id", id)
+                .datum(data)
+                .attr("d", line);
+
+            lines.push({
+                "xf" : xf,
+                "yf" : yf,
+                "line" : line,
+                "id" : id
+            });
+            return self;
+        }
     };
-    return new_data_arrived;
+    _.bindAll(graph, "dataCallback", "line");
+    return graph;
 }
