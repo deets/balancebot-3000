@@ -22,6 +22,16 @@
     	<div class="col-md-6" id="3dview">
     	</div>
       </div>
+      <div class="row">
+	<div class="col-md-6">
+	  <div class="btn-group" role="group" aria-label="...">
+	    <button id="clear_button" type="button" class="btn btn-default">Clear</button>
+	    <button id="limit_button" type="button" class="btn btn-default">Limit</button>
+	    <button type="button" class="btn btn-default">Right</button>
+</div>
+	</div>
+	<div class="col-md-6"></div>
+      </div>
     </div>
     <script src="/static/js/bootstrap.js"></script>
     <script src="/static/js/visualization.js"></script>
@@ -38,6 +48,8 @@ $(document).ready(function() {
      function(d) { return d.value * 2;},
      "yellow"
   );
+  $("#clear_button").click(graph.clear);
+  $("#limit_button").click(function() { graph.limit(300, true) });
   setupWebsocket(graph.dataCallback);
 //  setupScene();
 });

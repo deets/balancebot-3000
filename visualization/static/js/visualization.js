@@ -116,19 +116,26 @@ function setupGraph(root, margins) {
 
     var lines = [];
     var line_id = 0;
+    var limit = null;
 
     graph = {
         dataCallback : function (entry) {
             var self = this;
             data.push(entry);
-            var xdomain = xScale.domain();
-            var ydomain = yScale.domain();
+            if(data.length < 2) {
+                return;
+            }
+            if(limit !== null) {
+                data = data.slice(-limit);
+            }
+            var xextents = [];
+            var yextents = [];
             _.each(lines, function(line) {
-                xdomain.push(line.xf(entry));
-                ydomain.push(line.yf(entry));
+                xextents = xextents.concat(d3.extent(data, line.xf));
+                yextents = yextents.concat(d3.extent(data, line.yf));
             });
-            xScale.domain(d3.extent(xdomain));
-            yScale.domain(d3.extent(ydomain));
+            xScale.domain(d3.extent(xextents));
+            yScale.domain(d3.extent(yextents));
             xAxisNode.call(xAxis);
             yAxisNode.call(yAxis);
             _.each(lines, function(line) {
@@ -159,8 +166,19 @@ function setupGraph(root, margins) {
                 "id" : id
             });
             return self;
+        },
+        clear: function() {
+            data = [];
+        },
+
+        limit: function(new_limit, toggle) {
+            if(toggle !== undefined && toggle && new_limit == limit) {
+                limit = null;
+            } else {
+                limit = new_limit;
+            }
         }
     };
-    _.bindAll(graph, "dataCallback", "line");
+    _.bindAll(graph, "dataCallback", "line", "clear", "limit");
     return graph;
 }
