@@ -106,8 +106,9 @@ function setupGraph(root, options) {
             .attr("transform", "translate(0," + height + ")");
 
     var yAxisNode = svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis)
+            .attr("class", "y axis");
+
+    yAxisNode.call(yAxis)
             .append("text")
             .attr("class", "title")
             .attr("transform", "rotate(-90)")
