@@ -14,7 +14,7 @@ function setupWebsocket(callback) {
 
 
 function setupScene() {
-    var scene_root = $("#3dview");
+    var scene_root = $("#view");
 
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(
@@ -54,8 +54,7 @@ function setupScene() {
         0,  0,  0,  1
     );
 
-    function rotateCube(message) {
-        var input = JSON.parse(message);
+    function rotateCube(input) {
         var q = new THREE.Quaternion();
         var attitude = input["attitude"];
         q.w = attitude[0];
@@ -70,12 +69,14 @@ function setupScene() {
     }
 
     render();
+    return rotateCube;
 }
 
-function setupGraph(root, margins) {
+function setupGraph(root, options) {
     root = $(root);
+
     var root_node = root.get(0);
-    var margin = margins || {top: 20.5, right: 30, bottom: 30, left: 40.5};
+    var margin = options.margins || {top: 20.5, right: 30, bottom: 30, left: 40.5};
     var width = root.width() - margin.left - margin.right;
     var height = root.height() - margin.top - margin.bottom;
 
@@ -116,7 +117,7 @@ function setupGraph(root, margins) {
 
     var lines = [];
     var line_id = 0;
-    var limit = null;
+    var limit = options.limit || null;
 
     graph = {
         dataCallback : function (entry) {

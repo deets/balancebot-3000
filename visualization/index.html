@@ -19,7 +19,7 @@
       <div class="row">
     	<div class="col-md-6" id="graph">
     	</div>
-    	<div class="col-md-6" id="3dview">
+    	<div class="col-md-6" id="view">
     	</div>
       </div>
       <div class="row">
@@ -27,7 +27,7 @@
 	  <div class="btn-group" role="group" aria-label="...">
 	    <button id="clear_button" type="button" class="btn btn-default">Clear</button>
 	    <button id="limit_button" type="button" class="btn btn-default">Limit</button>
-	    <button type="button" class="btn btn-default">Right</button>
+	    <button id="scene_button" type="button" class="btn btn-default">Turn on 3D Scene</button>
 </div>
 	</div>
 	<div class="col-md-6"></div>
@@ -38,20 +38,36 @@
 
     <script>
 $(document).ready(function() {
-  var graph = setupGraph("#graph");
+  var graph = setupGraph("#graph", { "limit" : 300 });
   graph.line(
      function(d) { return d.timestamp;},
-     function(d) { return d.value;},
+     function(d) { return d.debugData.kf.gyroX; },
      "green"
   ).line(
      function(d) { return d.timestamp;},
-     function(d) { return d.value * 2;},
-     "yellow"
+     function(d) { return d.debugData.kf.gyroXOriginal; },
+     "red"
   );
   $("#clear_button").click(graph.clear);
-  $("#limit_button").click(function() { graph.limit(300, true) });
-  setupWebsocket(graph.dataCallback);
-//  setupScene();
+  $("#limit_button").click(function() { graph.limit(300, true); });
+  $("#scene_button").click(function() {
+     if(sceneCb === null) {
+        sceneCb = setupScene();
+     } else {
+        $("#view").empty();
+        sceneCb = null;
+     }
+  });
+
+  var sceneCb = null;
+
+  setupWebsocket(function(data) {
+    graph.dataCallback(data);
+    if(sceneCb !== null) {
+       sceneCb(data);
+    }
+  });
+
 });
 </script>
   </body>
