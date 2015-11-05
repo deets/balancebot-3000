@@ -42,11 +42,11 @@ $(document).ready(function() {
   graph.line(
      function(d) { return d.timestamp;},
      function(d) { return d.debugData.kf.gyroX; },
-     "green"
+     { color : "red", global_minmax : true }
   ).line(
      function(d) { return d.timestamp;},
      function(d) { return d.debugData.kf.gyroXOriginal; },
-     "red"
+     { "color" : "red", global_minmax : true }
   );
   $("#clear_button").click(graph.clear);
   $("#limit_button").click(function() { graph.limit(300, true); });

@@ -135,6 +135,10 @@ function setupGraph(root, options) {
             _.each(lines, function(line) {
                 xextents = xextents.concat(d3.extent(data, line.xf));
                 yextents = yextents.concat(d3.extent(data, line.yf));
+                if(line.config.global_minmax && line.config.first_data) {
+                    yextents = yextents.concat(yScale.domain());
+                }
+                line.config.first_data = true;
             });
             xScale.domain(d3.extent(xextents));
             yScale.domain(d3.extent(yextents));
@@ -146,7 +150,13 @@ function setupGraph(root, options) {
             });
         },
 
-        line : function(xf, yf, color) {
+        line : function(xf, yf, config) {
+            config = config || {
+                color : "#000000",
+                global_minmax : false
+            };
+
+            var color = config.color ;
             var self = this;
             var id = "line-" + line_id++;
 
@@ -162,10 +172,11 @@ function setupGraph(root, options) {
                 .attr("d", line);
 
             lines.push({
-                "xf" : xf,
-                "yf" : yf,
-                "line" : line,
-                "id" : id
+                xf : xf,
+                yf : yf,
+                line : line,
+                id : id,
+                config : config
             });
             return self;
         },
