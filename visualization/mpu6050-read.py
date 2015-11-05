@@ -17,5 +17,6 @@ while True:
         if key:
             data = data[key]
         pprint.pprint(data)
+        print "#" * 40
     except:
         print m
