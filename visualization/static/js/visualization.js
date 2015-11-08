@@ -5,7 +5,9 @@ function setupWebsocket(callback) {
     };
     ws.onmessage = function (evt) {
         var received_msg = evt.data;
-        callback(JSON.parse(received_msg));
+        var msg = JSON.parse(received_msg);
+        msg.timestamp /= 1000000.0;
+        callback(msg);
     };
     ws.onclose = function() {
         console.log("WS closed");
@@ -182,6 +184,9 @@ function setupGraph(root, options) {
         },
         clear: function() {
             data = [];
+            _.each(lines, function(line) {
+                line.config.first_data = false;
+            });
         },
 
         limit: function(new_limit, toggle) {
