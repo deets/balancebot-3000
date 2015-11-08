@@ -42,19 +42,12 @@ function setupScene() {
     scene.add( directionalLight );
 
     camera.position.z = 15;
+    camera.position.y = 5;
 
     var render = function () {
 	requestAnimationFrame( render );
 	renderer.render(scene, camera);
     };
-
-    var coordinateRemapMatrix = new THREE.Matrix4();
-    coordinateRemapMatrix.set(
-        0,  0,  1,  0,
-       -1,  0,  0,  0,
-        0, -1,  0,  0,
-        0,  0,  0,  1
-    );
 
     function rotateCube(input) {
         var q = new THREE.Quaternion();
@@ -65,12 +58,12 @@ function setupScene() {
         q.z = attitude[3];
         var m = new THREE.Matrix4();
         m.makeRotationFromQuaternion(q);
-//        m.multiply(coordinateRemapMatrix);
         q.setFromRotationMatrix(m);
         cube.quaternion.copy(q);
     }
 
     render();
+
     return rotateCube;
 }
 
