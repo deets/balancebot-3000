@@ -39,25 +39,48 @@
     <script>
 $(document).ready(function() {
   var graph = setupGraph("#graph", { "limit" : 300 });
+  <!-- graph.line( -->
+  <!--    function(d) { return d.timestamp;}, -->
+  <!--    function(d) { return d.debugData.kf.gyroX; }, -->
+  <!--    { color : "red", global_minmax : true } -->
+  <!-- ).line( -->
+  <!--    function(d) { return d.timestamp;}, -->
+  <!--    function(d) { return d.debugData.kf.gyroXOriginal; }, -->
+  <!--    { "color" : "green", global_minmax : true } -->
+  <!-- graph.line( -->
+  <!--    function(d) { return d.timestamp;}, -->
+  <!--    function(d) { return d.debugData.kf.atanAccX; }, -->
+  <!--    { "color" : "blue", global_minmax : true } -->
+  <!-- ); -->
   graph.line(
      function(d) { return d.timestamp;},
-     function(d) { return d.debugData.kf.gyroX; },
-     { color : "red", global_minmax : true }
+     function(d) { return d.acc[2]; },
+     { "color" : "#ff00ff", global_minmax : true }
   ).line(
      function(d) { return d.timestamp;},
-     function(d) { return d.debugData.kf.gyroXOriginal; },
-     { "color" : "red", global_minmax : true }
+     function(d) { return d.acc[1]; },
+     { "color" : "#000000", global_minmax : true }
+  ).line(
+     function(d) { return d.timestamp;},
+     function(d) { return d.acc[0]; },
+     { "color" : "steelblue", global_minmax : true }
+  ).line(
+     function(d) { return d.timestamp;},
+     function(d) { return d.debugData.kf.atanAccY; },
+     { "color" : "blue", global_minmax : true }
   );
-  $("#clear_button").click(graph.clear);
-  $("#limit_button").click(function() { graph.limit(300, true); });
-  $("#scene_button").click(function() {
+
+  function toggle3Dscene() {
      if(sceneCb === null) {
         sceneCb = setupScene();
      } else {
         $("#view").empty();
         sceneCb = null;
      }
-  });
+  }
+  $("#clear_button").click(graph.clear);
+  $("#limit_button").click(function() { graph.limit(300, true); });
+  $("#scene_button").click(toggle3Dscene);
 
   var sceneCb = null;
 
@@ -68,6 +91,7 @@ $(document).ready(function() {
     }
   });
 
+  toggle3Dscene();
 });
 </script>
   </body>
