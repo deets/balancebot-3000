@@ -34,3 +34,7 @@
   stroke: steelblue;
   stroke-width: 1.5px;
 }
+
+.legend-entry {
+    margin: 2px;
+}
