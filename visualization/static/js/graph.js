@@ -47,6 +47,8 @@ function setupGraph(root, options) {
     var line_bus = new Bacon.Bus();
     var line_id = 0;
     var limit = options.limit || null;
+    var limit_bus = new Bacon.Bus();
+    var limited = limit_bus.toProperty(limit !== null);
 
     graph = {
         dataCallback : function (entry) {
@@ -124,8 +126,9 @@ function setupGraph(root, options) {
             } else {
                 limit = new_limit;
             }
+            limit_bus.push(limit !== null);
         },
-
+        limited: limited,
         lines : line_bus
     };
     _.bindAll(graph, "dataCallback", "line", "clear", "limit");

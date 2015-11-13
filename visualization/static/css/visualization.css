@@ -38,3 +38,7 @@
 .legend-entry {
     margin: 2px;
 }
+
+.pressed {
+    background-color: #888888;
+}

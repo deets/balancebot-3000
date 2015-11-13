@@ -51,6 +51,16 @@ $(document).ready(function() {
       var e = $("<span class='legend-entry'/>").css("color", line_def.config.color).text(line_def.config.name);
       $("#legend").append(e);
   });
+
+  graph.limited.onValue(function(v) {
+console.log(v);
+    var lb = $("#limit_button");
+    if(v) {
+       lb.addClass("pressed");
+     } else {
+       lb.removeClass("pressed");
+     }
+  });
   <!-- graph.line( -->
   <!--    function(d) { return d.timestamp;}, -->
   <!--    function(d) { return d.debugData.kf.gyroX; }, -->
