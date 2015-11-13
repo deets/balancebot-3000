@@ -1,0 +1,17 @@
+* Balance-Bot 3000
+
+
+** MPU6050 Dependencies
+
+|-----------------------+------------------------------|
+| Name                  | package ubuntu mate          |
+|-----------------------+------------------------------|
+| Eigen3                | libeigen3-dev                |
+| nanomsg               | libnanomsg-dev               |
+| jsoncpp               | libjsoncpp-dev               |
+| i2c-dev               | libi2c-dev                   |
+| boost                 | libboost-dev                 |
+| boost-program-options | libboost-program-options-dev |
+|-----------------------+------------------------------|
+
+
