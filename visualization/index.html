@@ -54,15 +54,15 @@ $(document).ready(function() {
   <!-- ); -->
   graph.line(
      function(d) { return d.timestamp;},
-     function(d) { return d.acc[2]; },
+     function(d) { return d.gyroAcc[2]; },
      { "color" : "#ff00ff", global_minmax : true }
   ).line(
      function(d) { return d.timestamp;},
-     function(d) { return d.acc[1]; },
+     function(d) { return d.gyroAcc[1]; },
      { "color" : "#000000", global_minmax : true }
   ).line(
      function(d) { return d.timestamp;},
-     function(d) { return d.acc[0]; },
+     function(d) { return d.gyroAcc[0]; },
      { "color" : "steelblue", global_minmax : true }
   ).line(
      function(d) { return d.timestamp;},
