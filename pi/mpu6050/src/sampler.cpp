@@ -7,6 +7,7 @@
 #include <json/json.h>
 
 #include <sstream>
+#include <iostream>
 
 using namespace std::chrono;
 namespace po = boost::program_options;

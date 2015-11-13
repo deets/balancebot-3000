@@ -6,6 +6,8 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
 
+#include <iostream>
+
 template<typename M>
 M Q_continuous_white_noise(
     typename M::Scalar dt=1.,
