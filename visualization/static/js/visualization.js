@@ -34,15 +34,15 @@ $(document).ready(function() {
     graph.line(
         function(d) { return d.timestamp;},
         function(d) { return d.gyroAcc[2]; },
-        { "color" : "#ff00ff", global_minmax : true, name: "acc-Z" }
+        { "color" : "#ff00ff", global_minmax : true, name: "gyro-acc-Z" }
     ).line(
         function(d) { return d.timestamp;},
         function(d) { return d.gyroAcc[1]; },
-        { "color" : "#000000", global_minmax : true, name: "acc-Y" }
+        { "color" : "#000000", global_minmax : true, name: "gyro-acc-Y" }
     ).line(
         function(d) { return d.timestamp;},
         function(d) { return d.gyroAcc[0]; },
-        { "color" : "steelblue", global_minmax : true, name: "acc-X" }
+        { "color" : "steelblue", global_minmax : true, name: "gyro-acc-X" }
     ).line(
         function(d) { return d.timestamp;},
         function(d) { return d.debugData.kf.atanAccY; },
