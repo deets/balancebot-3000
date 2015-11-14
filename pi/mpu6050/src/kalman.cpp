@@ -2,6 +2,11 @@
 
 IMUKalmanFilter::IMUKalmanFilter(const std::string& jsonConfiguration)
   : _enabled(true)
+  , _axisToFilter{
+      AxisFilter::filterX,
+      AxisFilter::filterY,
+      AxisFilter::filterZ
+    }
 {
   _filter.x << 0, 0, 0;
   _filter.P = decltype(_filter.P)::Identity() * 500;
@@ -19,6 +24,20 @@ IMUKalmanFilter::IMUKalmanFilter(const std::string& jsonConfiguration)
   assert(root.isObject());
   if(root.isMember("enabled")) {
     _enabled = root["enabled"].asBool();
+  }
+  if(root.isMember("axisToFilter")) {
+    _axisToFilter = std::set<AxisFilter>();
+    for(const auto& jv : root["axisToFilter"]) {
+      auto v = jv.asString();
+      printf("filter: %s\n", v.c_str());
+      if(v == "x") {
+	_axisToFilter.insert(AxisFilter::filterX);
+      } else if(v == "y") {
+	_axisToFilter.insert(AxisFilter::filterY);
+      } else if(v == "z") {
+	_axisToFilter.insert(AxisFilter::filterZ);
+      }
+    }
   }
 }
 
@@ -44,15 +63,25 @@ void IMUKalmanFilter::filter(double dt, IMUData& res) {
   auto atanAccY = atan2(-res.accX, res.accZ);
   auto atanAccZ = -atan2(-res.accX, res.accY);
 
-  debugData["atanAccX"] = atanAccX;
-  debugData["atanAccY"] = atanAccY;
-  debugData["atanAccZ"] = atanAccZ;
+  debugData["atanAccX"] = rad2deg(atanAccX);
+  debugData["atanAccY"] = rad2deg(atanAccY);
+  debugData["atanAccZ"] = rad2deg(atanAccZ);
 
   if(_enabled) {
      _filter.x(0) = radNorm(_filter.x(0));
      _filter.x(1) = radNorm(_filter.x(1));
      _filter.x(2) = radNorm(_filter.x(2));
-     _filter.update(vector3_t(atanAccX, atanAccY, atanAccZ));
+     auto update_vector = _filter.x;
+     if(_axisToFilter.count(AxisFilter::filterX)) {
+       update_vector[0] = atanAccX;
+     }
+     if(_axisToFilter.count(AxisFilter::filterY)) {
+       update_vector[1] = atanAccY;
+     }
+     if(_axisToFilter.count(AxisFilter::filterZ)) {
+       update_vector[2] = atanAccZ;
+     }
+     _filter.update(update_vector);
   } else {
     _filter.fake_update();
   }

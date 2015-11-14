@@ -7,6 +7,7 @@
 #include <eigen3/Eigen/LU>
 
 #include <iostream>
+#include <set>
 
 template<typename M>
 M Q_continuous_white_noise(
@@ -141,6 +142,12 @@ std::ostream& operator<<(std::ostream& os, const KalmanFilter<StateDim, Measurem
 class IMUKalmanFilter : public TimeDeltaFilter<IMUKalmanFilter> {
 
 public:
+  enum class AxisFilter {
+    filterX,
+    filterY,
+    filterZ
+  };
+
   using kalmanfilter_t = KalmanFilter<3, 3, 3>;
 
   IMUKalmanFilter(const std::string& jsonConfiguration);
@@ -151,4 +158,5 @@ private:
   kalmanfilter_t _filter;
 
   bool _enabled;
+  std::set<AxisFilter> _axisToFilter;
 };
