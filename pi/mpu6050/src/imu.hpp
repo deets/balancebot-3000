@@ -4,10 +4,12 @@
 #include <chrono>
 #include <json/json.h>
 
+using timestamp_t = std::chrono::time_point<std::chrono::steady_clock>;
+using quaternion_t = Eigen::Quaternion<double>;
+using angleaxis_t = Eigen::AngleAxis<double>;
+using vector3_t = Eigen::Matrix<double, 3, 1>;
 
 struct IMUData {
-  using timestamp_t = std::chrono::time_point<std::chrono::steady_clock>;
-  using quaternion_t = Eigen::Quaternion<double>;
 
   IMUData();
 

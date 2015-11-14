@@ -6,7 +6,7 @@
 #include <boost/optional.hpp>
 
 
-Json::Value imuToJson(const IMUData& sample, IMUData::timestamp_t start_time);
+Json::Value imuToJson(const IMUData& sample, timestamp_t start_time);
 
 double deg2rad(double);
 double rad2deg(double);
@@ -35,6 +35,6 @@ public:
   }
 
 private:
-  boost::optional<IMUData::timestamp_t> _lastTimestamp;
+  boost::optional<timestamp_t> _lastTimestamp;
 
 };

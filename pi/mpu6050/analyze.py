@@ -4,10 +4,10 @@ import numpy
 import pprint
 
 def main():
-    samples = json.load(sys.stdin)
+    samples = json.load(open(sys.argv[1]))
     res = {}
     for key in samples[0].keys():
-        if key == 'timestamp':
+        if key == 'timestamp' or not isinstance(samples[0][key], list):
             continue
         for i, name in enumerate("xyz"):
             a = numpy.array([s[key][i] for s in samples])

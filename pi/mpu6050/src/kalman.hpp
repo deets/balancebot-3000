@@ -142,7 +142,6 @@ class IMUKalmanFilter : public TimeDeltaFilter<IMUKalmanFilter> {
 
 public:
   using kalmanfilter_t = KalmanFilter<3, 3, 3>;
-  using vector3_t = kalmanfilter_t::MeasurementT;
 
   IMUKalmanFilter(const std::string& jsonConfiguration);
 

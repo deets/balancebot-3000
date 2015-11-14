@@ -16,5 +16,5 @@ public:
 
 private:
   vector3_t _gyroAcc;
-  IMUData::quaternion_t _attitude;
+  quaternion_t _attitude;
 };

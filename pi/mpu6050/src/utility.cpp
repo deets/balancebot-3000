@@ -12,7 +12,7 @@ namespace {
   }
 
   template<>
-  Json::Value toJson<IMUData::quaternion_t>(const IMUData::quaternion_t& quat) {
+  Json::Value toJson<quaternion_t>(const quaternion_t& quat) {
     Json::Value quatJ(Json::arrayValue);
     quatJ.resize(4);
     quatJ[0] = quat.w();
@@ -24,7 +24,7 @@ namespace {
 };
 
 
-Json::Value imuToJson(const IMUData& sample, IMUData::timestamp_t start_time) {
+Json::Value imuToJson(const IMUData& sample, timestamp_t start_time) {
     Json::Value sampleEntry(Json::objectValue);
     Json::Value gyroEntry(Json::arrayValue);
     gyroEntry.resize(3);
@@ -57,12 +57,12 @@ Json::Value imuToJson(const IMUData& sample, IMUData::timestamp_t start_time) {
 
 
 double deg2rad(double deg) {
-  return deg * M_PI_2 / 180.0;
+  return deg * M_PI / 180.0;
 }
 
 
 double rad2deg(double rad) {
-  return rad * 180.0 / M_PI_2;
+  return rad * 180.0 / M_PI;
 }
 
 
