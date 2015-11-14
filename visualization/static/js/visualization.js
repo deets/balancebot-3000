@@ -15,82 +15,60 @@ function setupWebsocket(callback) {
 }
 
 
-function setupScene() {
-    var scene_root = $("#view");
+$(document).ready(function() {
+    var graph = setupGraph("#graph", { "limit" : 300 });
+    graph.lines.onValue(function(line_def) {
+        var e = $("<span class='legend-entry'/>").css("color", line_def.config.color).text(line_def.config.name);
+        $("#legend").append(e);
+    });
 
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(
-        75,
-        scene_root.width() /scene_root.height(),
-        0.1,
-        1000
-    );
-
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(scene_root.width(), scene_root.height());
-    scene_root.append(renderer.domElement);
-
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
-    var light = new THREE.AmbientLight( 0x404040 ); // soft white light
-    var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-    directionalLight.position.set( 0, 50, 100 );
-    scene.add( directionalLight );
-
-    camera.position.z = 15;
-    camera.position.y = 5;
-
-    var render = function () {
-	requestAnimationFrame( render );
-	renderer.render(scene, camera);
-    };
-
-    var m1 = new THREE.Matrix4();
-    var mr1 = new THREE.Matrix4();
-    mr1.makeRotationZ(Math.PI / 2);
-    var mr2 = new THREE.Matrix4();
-    mr2.makeRotationX(Math.PI / 2);
-
-    m1.multiplyMatrices(mr1, mr2);
-
-    var m2 = new THREE.Matrix4();
-    m2.getInverse(m1);
-
-    var the_pi = null;
-    var loader = new THREE.OBJLoader();
-    // load a resource
-    loader.load(
-	// resource URL
-	'/static/rpi.obj',
-	// Function when resource is loaded
-	function ( object ) {
-            the_pi = object;
-            object.scale.multiplyScalar(.1);
-            scene.add(object);
-	}
-    );
-
-    function rotateCube(input) {
-        if(the_pi === null) {
-            return;
+    graph.limited.onValue(function(v) {
+        console.log(v);
+        var lb = $("#limit_button");
+        if(v) {
+            lb.addClass("pressed");
+        } else {
+            lb.removeClass("pressed");
         }
-        var q = new THREE.Quaternion();
-        var attitude = input["attitude"];
-        q.w = attitude[0];
-        q.x = attitude[1];
-        q.y = attitude[2];
-        q.z = attitude[3];
-        var m = new THREE.Matrix4();
-        var rs = new THREE.Matrix4();
-        var r = new THREE.Matrix4();
-        rs.makeRotationFromQuaternion(q);
-        r.getInverse(rs);
-        m.multiply(m2);
-        m.multiply(r);
-        m.multiply(m1);
-        q.setFromRotationMatrix(m);
-        the_pi.quaternion.copy(q);
-    }
+    });
+    graph.line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.gyroAcc[2]; },
+        { "color" : "#ff00ff", global_minmax : true, name: "acc-Z" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.gyroAcc[1]; },
+        { "color" : "#000000", global_minmax : true, name: "acc-Y" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.gyroAcc[0]; },
+        { "color" : "steelblue", global_minmax : true, name: "acc-X" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.debugData.kf.atanAccY; },
+        { "color" : "blue", global_minmax : true, name: "atan-Y" }
+    );
 
-    render();
-    return rotateCube;
-}
+    function toggle3Dscene() {
+        if(sceneCb === null) {
+            sceneCb = setupScene();
+        } else {
+            $("#view").empty();
+            sceneCb = null;
+        }
+    }
+    $("#clear_button").click(graph.clear);
+    $("#limit_button").click(function() { graph.limit(300, true); });
+    $("#scene_button").click(toggle3Dscene);
+
+    var sceneCb = null;
+
+    setupWebsocket(function(data) {
+        graph.dataCallback(data);
+        if(sceneCb !== null) {
+            sceneCb(data);
+        }
+    });
+
+    toggle3Dscene();
+});
