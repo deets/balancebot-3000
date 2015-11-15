@@ -16,8 +16,4 @@ void AttitudeFilter::filter(double dt, IMUData& res) {
   const auto deltaQ = quaternion_t(qw, qx, qy, qz);
   _attitude = deltaQ * _attitude;
   res.attitude = _attitude;
-  _gyroAcc += vector3_t(res.gyroX, res.gyroY, res.gyroZ) * dt;
-  res.gyroXAcc = _gyroAcc[0];
-  res.gyroYAcc = _gyroAcc[1];
-  res.gyroZAcc = _gyroAcc[2];
 }

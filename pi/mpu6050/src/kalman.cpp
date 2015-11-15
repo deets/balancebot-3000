@@ -9,13 +9,13 @@ IMUKalmanFilter::IMUKalmanFilter(const std::string& jsonConfiguration)
     }
 {
   _filter.x << 0, 0, 0;
-  _filter.P = decltype(_filter.P)::Identity() * 500;
+  _filter.P = decltype(_filter.P)::Identity() * 10;
   _filter.F = decltype(_filter.F)::Identity();
   _filter.Q = decltype(_filter.Q)::Identity() * 2.0;
 
   _filter.B = decltype(_filter.B)::Identity();
   _filter.H = decltype(_filter.H)::Identity();
-  _filter.R = decltype(_filter.R)::Identity() * 20.0;
+  _filter.R = decltype(_filter.R)::Identity() * 2000.0;
 
   Json::Reader reader;
   Json::Value root;
@@ -29,7 +29,6 @@ IMUKalmanFilter::IMUKalmanFilter(const std::string& jsonConfiguration)
     _axisToFilter = std::set<AxisFilter>();
     for(const auto& jv : root["axisToFilter"]) {
       auto v = jv.asString();
-      printf("filter: %s\n", v.c_str());
       if(v == "x") {
 	_axisToFilter.insert(AxisFilter::filterX);
       } else if(v == "y") {
@@ -94,6 +93,10 @@ void IMUKalmanFilter::filter(double dt, IMUData& res) {
   debugData["gyroX"] = res.gyroX;
   debugData["gyroY"] = res.gyroY;
   debugData["gyroZ"] = res.gyroZ;
+
+  res.gyroXAcc = rad2deg(_filter.x[0]);
+  res.gyroYAcc = rad2deg(_filter.x[1]);
+  res.gyroZAcc = rad2deg(_filter.x[2]);
 
   res.jsonDebugData["kf"] = debugData;
 }

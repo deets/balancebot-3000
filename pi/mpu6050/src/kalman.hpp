@@ -107,15 +107,13 @@ public:
 
   void update(const MeasurementT& z) {
     const auto S = H * P_ * H.transpose() + R;
-    const auto K = P_ * H.transpose() * S.inverse();
+    const auto t = (P_ * H.transpose());
+    const auto K = t * S.inverse();
     const auto y = z - H * x;
     const auto kalman_gain = K * y;
     x = x_ + kalman_gain;
     P = (decltype(P)::Identity() - K*H) * P_;
     updated = true;
-    std::cout << "z: " << z << "\n";
-    std::cout << "kalman_gain: " << kalman_gain << "\n";
-    std::cout << "x: " << x << "\n";
   }
 
 

@@ -67,7 +67,6 @@ int main(int argc, const char* argv[]) {
   if(vm.count(OPT_KALMANFILTER)) {
     auto configFile = vm[OPT_KALMANFILTER].as<std::string>();
     assert(configFile != "");
-    printf("%s\n", configFile.c_str());
     pKalmanFilter = decltype(pKalmanFilter)(
 	new IMUKalmanFilter(configFile)
     );
