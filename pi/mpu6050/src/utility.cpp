@@ -3,6 +3,7 @@
 #include <math.h>
 #include <chrono>
 #include <fstream>
+#include <cmath>
 
 
 namespace {
@@ -56,15 +57,6 @@ Json::Value imuToJson(const IMUData& sample, timestamp_t start_time) {
 }
 
 
-double deg2rad(double deg) {
-  return deg * M_PI / 180.0;
-}
-
-
-double rad2deg(double rad) {
-  return rad * 180.0 / M_PI;
-}
-
 
 double radNorm(double r) {
   while(r > M_PI_2) {
@@ -76,6 +68,14 @@ double radNorm(double r) {
   return r;
 }
 
+double circleNorm(double absolute, double relative) {
+  if(absolute > relative && absolute - relative >= M_PI_2) {
+    relative += M_PI * 2 * ceil((absolute - relative) / (M_PI * 2));
+  } else if(absolute < relative && relative - absolute >= M_PI_2) {
+    relative -= M_PI * 2 * ceil((relative - absolute) / (M_PI * 2));
+  }
+  return relative;
+}
 
 std::string read(const std::string& path) {
   std::ifstream inputFile(path);

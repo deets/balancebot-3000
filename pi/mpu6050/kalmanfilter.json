@@ -1,4 +1,5 @@
 {
-    "enabled": true,
-    "axisToFilter": ["x", "y"]
+    "enabled": false,
+    "axisToFilter": ["x", "y"],
+    "accStdDev": [0.0053180252908774988, 0.0043872305737932653, 0.025965087759240363]
 }

@@ -3,7 +3,8 @@
 #include "imu.hpp"
 #include "utility.hpp"
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
+#include <boost/optional.hpp>
 
 class AttitudeFilter : public TimeDeltaFilter<AttitudeFilter> {
 
@@ -16,5 +17,5 @@ public:
 
 private:
   vector3_t _gyroAcc;
-  quaternion_t _attitude;
+  boost::optional<quaternion_t> _attitude;
 };

@@ -8,9 +8,20 @@
 
 Json::Value imuToJson(const IMUData& sample, timestamp_t start_time);
 
-double deg2rad(double);
-double rad2deg(double);
+template<typename T>
+T deg2rad(const T&);
+template<typename T>
+T rad2deg(const T&);
+
 double radNorm(double);
+/* Norms the relative rotation given in rad
+ * to be closest to the given absolute.
+ *
+ * e.g: absolute = 2*PI
+ *      relative = PI/4
+ *      result   = 2*PI + PI/4
+ */
+double circleNorm(double absolute, double relative);
 
 std::string read(const std::string& path);
 
@@ -38,3 +49,15 @@ private:
   boost::optional<timestamp_t> _lastTimestamp;
 
 };
+
+
+template<typename T>
+T deg2rad(const T& deg) {
+  return deg * M_PI / 180.0;
+}
+
+
+template<typename T>
+T rad2deg(const T& rad) {
+  return rad * 180.0 / M_PI;
+}

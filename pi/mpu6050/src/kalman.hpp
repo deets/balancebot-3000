@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <set>
+#include <ostream>
 
 template<typename M>
 M Q_continuous_white_noise(
@@ -157,4 +158,7 @@ private:
 
   bool _enabled;
   std::set<AxisFilter> _axisToFilter;
+  vector3_t _accDeviation;
 };
+
+std::ostream& operator<<(std::ostream& os, const IMUKalmanFilter::AxisFilter& axis);

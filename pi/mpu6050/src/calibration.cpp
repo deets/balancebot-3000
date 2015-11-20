@@ -16,23 +16,23 @@ IMUCalibration IMUCalibration::fromJsonFile(const std::string& path) {
 IMUCalibration IMUCalibration::fromJson(const Json::Value& calibration) {
   IMUData offsets;
 
-  if(calibration.isMember("gyroX")) {
-    offsets.gyroX = calibration["gyroX"].asDouble();
+  if(calibration.isMember("gyro_x")) {
+    offsets.gyroX = calibration["gyro_x"]["mean"].asDouble();
   }
-  if(calibration.isMember("gyroY")) {
-    offsets.gyroY = calibration["gyroY"].asDouble();
+  if(calibration.isMember("gyro_y")) {
+    offsets.gyroY = calibration["gyro_y"]["mean"].asDouble();
   }
-  if(calibration.isMember("gyroZ")) {
-    offsets.gyroZ = calibration["gyroZ"].asDouble();
+  if(calibration.isMember("gyro_z")) {
+    offsets.gyroZ = calibration["gyro_z"]["mean"].asDouble();
   }
-  if(calibration.isMember("accX")) {
-    offsets.accX = calibration["accX"].asDouble();
+  if(calibration.isMember("acc_x")) {
+    offsets.accX = calibration["acc_X"]["mean"].asDouble();
   }
-  if(calibration.isMember("accY")) {
-    offsets.accY = calibration["accY"].asDouble();
+  if(calibration.isMember("acc_Y")) {
+    offsets.accY = calibration["acc_y"]["mean"].asDouble();
   }
-  if(calibration.isMember("accZ")) {
-    offsets.accZ = calibration["accZ"].asDouble();
+  if(calibration.isMember("acc_Z")) {
+    offsets.accZ = calibration["acc_z"]["mean"].asDouble();
   }
 
   return IMUCalibration(offsets);

@@ -30,6 +30,7 @@ add_executable(mpu6050-sampler
    src/sampler.cpp
 )
 
+
 target_include_directories(
 	mpu6050-sampler SYSTEM PRIVATE 
 	src 
@@ -77,3 +78,31 @@ target_link_libraries(
 	mpu6050-broadcast-receiver 
 	nanomsg
 ) 
+
+
+add_executable(
+	mpu6050-test
+	tests/mpu6050-test.cc
+	tests/googletest/googletest/src/gtest-all.cc
+	tests/googletest/googletest/src/gtest_main.cc	
+)
+
+
+target_include_directories(
+	mpu6050-test SYSTEM PRIVATE 
+	src
+	tests/googletest/googletest/include/
+	tests/googletest/googletest/
+	"${EIGEN3_INCLUDE_DIRS}"
+	"${JSONCPP_INCLUDE_DIRS}"
+)
+
+
+target_link_libraries(
+	mpu6050-test
+	mpu6050
+	nanomsg
+	pthread
+	"${JSONCPP_LIBRARIES}" 
+)
+   

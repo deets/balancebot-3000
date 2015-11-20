@@ -38,6 +38,13 @@ IMUKalmanFilter::IMUKalmanFilter(const std::string& jsonConfiguration)
       }
     }
   }
+  if(root.isMember("accStdDev")) {
+    _accDeviation = vector3_t(
+	root["accStdDev"][0].asDouble(),
+	root["accStdDev"][1].asDouble(),
+	root["accStdDev"][2].asDouble()
+    );
+  }
 }
 
 
@@ -58,28 +65,40 @@ void IMUKalmanFilter::filter(double dt, IMUData& res) {
   u << gx, gy, gz;
   _filter.predict(u);
 
-  auto atanAccX = -atan2(-res.accY, res.accZ);
-  auto atanAccY = atan2(-res.accX, res.accZ);
-  auto atanAccZ = -atan2(-res.accX, res.accY);
+  printf("-accY: %f accZ: %f accDeviation.y %f accDeviation.z %f \n",
+	 -res.accY, res.accZ, _accDeviation(1),  _accDeviation(2));
 
+  auto threshold = 0.2 * 0.2;
+
+  auto shouldFilterForAxis = [threshold, this](const double A, const double B, AxisFilter axis) -> bool {
+    auto res = _axisToFilter.count(axis) > 0 && (A*A + B*B) > threshold;
+    std::cout << "axis " << axis << " filtered: " << res << "\n";
+    return res;
+  };
+
+  double atanAccX, atanAccY, atanAccZ;
+
+  if(shouldFilterForAxis(res.accY, res.accZ, AxisFilter::filterX)) {
+    atanAccX = circleNorm(_filter.x(0), -atan2(-res.accY, res.accZ));
+  } else {
+    atanAccX = _filter.x(0);
+  }
+  if(shouldFilterForAxis(res.accX, res.accZ, AxisFilter::filterY)) {
+    atanAccY = circleNorm(_filter.x(1), atan2(-res.accX, res.accZ));
+  } else {
+    atanAccY = _filter.x(1);
+  }
+  if(shouldFilterForAxis(res.accX, res.accY, AxisFilter::filterZ)) {
+    atanAccZ = circleNorm(_filter.x(2), -atan2(-res.accX, res.accY));
+  } else {
+    atanAccZ = _filter.x(2);
+  }
   debugData["atanAccX"] = rad2deg(atanAccX);
   debugData["atanAccY"] = rad2deg(atanAccY);
   debugData["atanAccZ"] = rad2deg(atanAccZ);
 
   if(_enabled) {
-     _filter.x(0) = radNorm(_filter.x(0));
-     _filter.x(1) = radNorm(_filter.x(1));
-     _filter.x(2) = radNorm(_filter.x(2));
-     auto update_vector = _filter.x;
-     if(_axisToFilter.count(AxisFilter::filterX)) {
-       update_vector[0] = atanAccX;
-     }
-     if(_axisToFilter.count(AxisFilter::filterY)) {
-       update_vector[1] = atanAccY;
-     }
-     if(_axisToFilter.count(AxisFilter::filterZ)) {
-       update_vector[2] = atanAccZ;
-     }
+     auto update_vector = vector3_t(atanAccX, atanAccY, atanAccZ);
      _filter.update(update_vector);
   } else {
     _filter.fake_update();
@@ -99,4 +118,19 @@ void IMUKalmanFilter::filter(double dt, IMUData& res) {
   res.gyroZAcc = rad2deg(_filter.x[2]);
 
   res.jsonDebugData["kf"] = debugData;
+}
+
+std::ostream& operator<<(std::ostream& os, const IMUKalmanFilter::AxisFilter& axis) {
+  switch(axis) {
+    case IMUKalmanFilter::AxisFilter::filterX:
+      os << "filterX";
+      break;
+    case IMUKalmanFilter::AxisFilter::filterY:
+      os << "filterY";
+      break;
+    case IMUKalmanFilter::AxisFilter::filterZ:
+      os << "filterZ";
+      break;
+  }
+  return os;
 }

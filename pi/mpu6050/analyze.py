@@ -16,7 +16,7 @@ def main():
                 std=numpy.std(a),
                 var=numpy.var(a),
             )
-    pprint.pprint(res)
+    print(json.dumps(res, indent=4))
 
 
 if __name__ == '__main__':

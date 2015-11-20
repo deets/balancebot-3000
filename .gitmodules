@@ -1,0 +1,3 @@
+[submodule "pi/mpu6050/tests/googletest"]
+	path = pi/mpu6050/tests/googletest
+	url = git@github.com:google/googletest.git
