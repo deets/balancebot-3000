@@ -1,3 +1,34 @@
+
+COLORS = [
+    "#FDB8A9",
+    "#D37C6A",
+    "#AA4C39",
+    "#812815",
+    "#570F00",
+    "#877BAE",
+    "#605192",
+    "#403075",
+    "#271758",
+    "#13073C",
+    "#FDF5A9",
+    "#D3CA6A",
+    "#AAA039",
+    "#817715",
+    "#574F00"
+]
+
+color_index = 0;
+
+function pick_color() {
+    var c =COLORS[color_index];
+    color_index = (color_index + COLORS.length / 3 + 1) % COLORS.length;
+    return c;
+}
+
+function deg2rad(d) {
+    return d / 180.0 * Math.PI;
+}
+
 function setupWebsocket(callback) {
     var ws = new WebSocket("ws://localhost:12345/ws?Id=123456789");
     ws.onopen = function() {
@@ -13,6 +44,7 @@ function setupWebsocket(callback) {
         console.log("WS closed");
     };
 }
+
 
 
 $(document).ready(function() {
@@ -46,24 +78,52 @@ $(document).ready(function() {
     });
     graph.line(
         function(d) { return d.timestamp;},
-        function(d) { return d.gyroAcc[2]; },
-        { "color" : "#ff00ff", global_minmax : true, name: "gyro-accu-Z" }
+        function(d) { return deg2rad(d.gyroAcc[2]); },
+        { "color" : pick_color(), global_minmax : true, name: "gyro-accu-Z" }
     ).line(
         function(d) { return d.timestamp;},
-        function(d) { return d.gyroAcc[1]; },
-        { "color" : "#000000", global_minmax : true, name: "gyro-accu-Y" }
+        function(d) { return deg2rad(d.gyroAcc[1]); },
+        { "color" : pick_color(), global_minmax : true, name: "gyro-accu-Y" }
     ).line(
         function(d) { return d.timestamp;},
-        function(d) { return d.gyroAcc[0]; },
-        { "color" : "steelblue", global_minmax : true, name: "gyro-accu-X" }
+        function(d) { return deg2rad(d.gyroAcc[0]); },
+        { "color" : pick_color(), global_minmax : true, name: "gyro-accu-X" }
     ).line(
         function(d) { return d.timestamp;},
         function(d) { return d.debugData.kf.atanAccY; },
-        { "color" : "#801515", global_minmax : true, name: "atan-Y" }
+        { "color" : pick_color(), global_minmax : true, name: "atan-Y" }
     ).line(
         function(d) { return d.timestamp;},
         function(d) { return d.debugData.kf.atanAccX; },
-        { "color" : "#d46a6a", global_minmax : true, name: "atan-X" }
+        { "color" : pick_color(), global_minmax : true, name: "atan-X" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.debugData.kf.atanAccXRaw; },
+        { "color" : pick_color(), global_minmax : true, name: "atan-X-raw" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.debugData.kf.atanAccYRaw; },
+        { "color" : pick_color(), global_minmax : true, name: "atan-Y-raw" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.acc[0]; },
+        { "color" : pick_color(), global_minmax : true, name: "accX" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.acc[1]; },
+        { "color" : pick_color(), global_minmax : true, name: "accY" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.acc[2]; },
+        { "color" : pick_color(), global_minmax : true, name: "accZ" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return Math.sqrt(Math.pow(d.acc[0], 2) + Math.pow(d.acc[1], 2) + Math.pow(d.acc[2], 2)); },
+        { "color" : pick_color(), global_minmax : true, name: "acc length" }
+    ).line(
+        function(d) { return d.timestamp;},
+        function(d) { return d.debugData.kf.accOutsideThreshold; },
+        { "color" : pick_color(), global_minmax : true, name: "acc outside threshold" }
     )
     //     .line(
     //     function(d) { return d.timestamp;},
@@ -88,6 +148,7 @@ $(document).ready(function() {
 
     setupWebsocket(function(data) {
         graph.dataCallback(data);
+        console.log(data);
         if(sceneCb !== null) {
             sceneCb(data);
         }
