@@ -1,10 +1,13 @@
 #include "kalman.hpp"
 
-template<>
-Json::Value toJson<KalmanFilter<3, 3, 3, double>>(const KalmanFilter<3, 3, 3, double>&) {
-  auto res = Json::Value(Json::objectValue);
-  return res;
-}
+template<int A, int B, int C, typename FloatT>
+struct json_converter<KalmanFilter<A, B, C, FloatT>> {
+
+  static Json::Value toJson(const KalmanFilter<A, B, C, FloatT>&) {
+    auto res = Json::Value(Json::objectValue);
+    return res;
+  }
+};
 
 
 IMUKalmanFilter::IMUKalmanFilter(const std::string& jsonConfiguration)
