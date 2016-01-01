@@ -8,6 +8,12 @@
 
 Json::Value imuToJson(const IMUData& sample, timestamp_t start_time);
 
+template<typename>
+struct json_converter;
+
+template<typename T>
+Json::Value toJson(const T&);
+
 template<typename T>
 T deg2rad(const T&);
 template<typename T>
@@ -53,11 +59,13 @@ private:
 
 template<typename T>
 T deg2rad(const T& deg) {
-  return deg * M_PI / 180.0;
+  return (T)(deg * (M_PI / 180.0));
 }
 
 
 template<typename T>
 T rad2deg(const T& rad) {
-  return rad * 180.0 / M_PI;
+  return (T)(rad * (180.0 / M_PI));
 }
+
+#include "utility.ipp"

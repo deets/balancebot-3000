@@ -113,12 +113,15 @@ IMUData MPU6050::sample(I2CBus& bus, bool waitForData) {
   double igyroY = static_cast<int16_t>(bus.read_word(GYRO_YOUT_H));
   double igyroZ = static_cast<int16_t>(bus.read_word(GYRO_ZOUT_H));
 
-  res.accX = iaccX / _accSensitivity;
-  res.accY = iaccY / _accSensitivity;
-  res.accZ = iaccZ / _accSensitivity;
-  res.gyroX = igyroX / _gyroSensitivity;
-  res.gyroY = igyroY / _gyroSensitivity;
-  res.gyroZ = igyroZ / _gyroSensitivity;
-
+  res.acc = vector3_t(
+      iaccX / _accSensitivity,
+      iaccY / _accSensitivity,
+      iaccZ / _accSensitivity
+  );
+  res.gyro = vector3_t(
+      igyroX / _gyroSensitivity,
+      igyroY / _gyroSensitivity,
+      igyroZ / _gyroSensitivity
+  );
   return res;
 }

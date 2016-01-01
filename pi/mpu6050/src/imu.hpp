@@ -13,16 +13,9 @@ struct IMUData {
 
   IMUData();
 
-  double accX;
-  double accY;
-  double accZ;
-  double gyroX;
-  double gyroY;
-  double gyroZ;
-
-  double gyroXAcc;
-  double gyroYAcc;
-  double gyroZAcc;
+  vector3_t acc;
+  vector3_t gyro;
+  vector3_t gyroAcc;
 
   quaternion_t attitude;
 

@@ -1,12 +1,21 @@
 #include "kalman.hpp"
 
+template<>
+Json::Value toJson<KalmanFilter<3, 3, 3, double>>(const KalmanFilter<3, 3, 3, double>&) {
+  auto res = Json::Value(Json::objectValue);
+  return res;
+}
+
+
 IMUKalmanFilter::IMUKalmanFilter(const std::string& jsonConfiguration)
   : _enabled(true)
   , _axisToFilter{
       AxisFilter::filterX,
       AxisFilter::filterY,
       AxisFilter::filterZ
-    }
+    },
+    _accLengthThreshold{0.0},
+    _atanThreshold{0.0}
 {
   _filter.x << 0, 0, 0;
   _filter.P = decltype(_filter.P)::Identity() * 10;
@@ -45,78 +54,74 @@ IMUKalmanFilter::IMUKalmanFilter(const std::string& jsonConfiguration)
 	root["accStdDev"][2].asDouble()
     );
   }
+
+  if(root.isMember("accLengthThreshold")) {
+    _accLengthThreshold = root["accLengthThreshold"].asDouble();
+  }
+  if(root.isMember("atanThreshold")) {
+    _atanThreshold = root["atanThreshold"].asDouble();
+  }
+
 }
 
 
 void IMUKalmanFilter::filter(double dt, IMUData& res) {
-  Json::Value debugData(Json::objectValue);
-
-  debugData["gyroXOriginal"] = res.gyroX;
-  debugData["gyroYOriginal"] = res.gyroY;
-  debugData["gyroZOriginal"] = res.gyroZ;
-
-  const auto gx = deg2rad(res.gyroX) * dt;
-  const auto gy = deg2rad(res.gyroY) * dt;
-  const auto gz = deg2rad(res.gyroZ) * dt;
-
-  const auto old_x = _filter.x;
-
-  kalmanfilter_t::ControlT u;
-  u << gx, gy, gz;
-  _filter.predict(u);
-
-  printf("-accY: %f accZ: %f accDeviation.y %f accDeviation.z %f \n",
-	 -res.accY, res.accZ, _accDeviation(1),  _accDeviation(2));
-
-  auto threshold = 0.2 * 0.2;
-
-  auto shouldFilterForAxis = [threshold, this](const double A, const double B, AxisFilter axis) -> bool {
-    auto res = _axisToFilter.count(axis) > 0 && (A*A + B*B) > threshold;
-    std::cout << "axis " << axis << " filtered: " << res << "\n";
+  auto shouldFilterForAxis = [this](const double A, const double B, AxisFilter axis) -> bool {
+    auto res = _axisToFilter.count(axis) > 0 &&
+    (_atanThreshold == 0.0 || (A*A + B*B) > _atanThreshold * _atanThreshold)
+    ;
+    //std::cout << "axis " << axis << " filtered: " << res << "\n";
     return res;
   };
 
-  double atanAccX, atanAccY, atanAccZ;
+  auto accVectorWithinThreshold = [this, &res]() {
+    return _accLengthThreshold == 0.0 || std::abs(1.0 - res.acc.norm()) < _accLengthThreshold;
+  };
 
-  if(shouldFilterForAxis(res.accY, res.accZ, AxisFilter::filterX)) {
-    atanAccX = circleNorm(_filter.x(0), -atan2(-res.accY, res.accZ));
-  } else {
-    atanAccX = _filter.x(0);
-  }
-  if(shouldFilterForAxis(res.accX, res.accZ, AxisFilter::filterY)) {
-    atanAccY = circleNorm(_filter.x(1), atan2(-res.accX, res.accZ));
-  } else {
-    atanAccY = _filter.x(1);
-  }
-  if(shouldFilterForAxis(res.accX, res.accY, AxisFilter::filterZ)) {
-    atanAccZ = circleNorm(_filter.x(2), -atan2(-res.accX, res.accY));
-  } else {
-    atanAccZ = _filter.x(2);
-  }
-  debugData["atanAccX"] = rad2deg(atanAccX);
-  debugData["atanAccY"] = rad2deg(atanAccY);
-  debugData["atanAccZ"] = rad2deg(atanAccZ);
+  Json::Value debugData(Json::objectValue);
+  const auto old_x = _filter.x;
 
-  if(_enabled) {
-     auto update_vector = vector3_t(atanAccX, atanAccY, atanAccZ);
-     _filter.update(update_vector);
-  } else {
-    _filter.fake_update();
+  debugData["gyroXOriginal"] = res.gyro(0);
+  debugData["gyroYOriginal"] = res.gyro(1);
+  debugData["gyroZOriginal"] = res.gyro(2);
+
+  _filter.predict(deg2rad(res.gyro) * dt);
+
+  vector3_t atanAcc = _filter.x;
+
+  if(shouldFilterForAxis(res.acc(1), res.acc(2), AxisFilter::filterX)) {
+    atanAcc(0) = circleNorm(_filter.x(0), -atan2(-res.acc(1), res.acc(2)));
+  }
+  if(shouldFilterForAxis(res.acc(0), res.acc(2), AxisFilter::filterY)) {
+    atanAcc(1) = circleNorm(_filter.x(1), atan2(-res.acc(0), res.acc(2)));
+  }
+  if(shouldFilterForAxis(res.acc(0), res.acc(1), AxisFilter::filterZ)) {
+    atanAcc(2) = circleNorm(_filter.x(2), -atan2(-res.acc(0), res.acc(1)));
   }
 
-  auto diff = _filter.x - old_x;
-  res.gyroX = rad2deg(diff(0)) / dt;
-  res.gyroY = rad2deg(diff(1)) / dt;
-  res.gyroZ = rad2deg(diff(2)) / dt;
+  debugData["atanAccX"] = atanAcc(0);
+  debugData["atanAccY"] = atanAcc(1);
+  debugData["atanAccZ"] = atanAcc(2);
+  debugData["atanAccXRaw"] = -atan2(-res.acc(1), res.acc(2));
+  debugData["atanAccYRaw"] = atan2(-res.acc(0), res.acc(2));
+  debugData["atanAccZRaw"] = -atan2(-res.acc(0), res.acc(1));
+  debugData["accOutsideThreshold"] = accVectorWithinThreshold() ? 0 : 1;
 
-  debugData["gyroX"] = res.gyroX;
-  debugData["gyroY"] = res.gyroY;
-  debugData["gyroZ"] = res.gyroZ;
+  if(_enabled && accVectorWithinThreshold()) {
+      _filter.update(atanAcc);
+    } else {
+      _filter.nop_update();
+    }
 
-  res.gyroXAcc = rad2deg(_filter.x[0]);
-  res.gyroYAcc = rad2deg(_filter.x[1]);
-  res.gyroZAcc = rad2deg(_filter.x[2]);
+  vector3_t diff = _filter.x - old_x;
+  res.gyro = rad2deg(diff) / dt;
 
+  debugData["gyroX"] = res.gyro(0);
+  debugData["gyroY"] = res.gyro(1);
+  debugData["gyroZ"] = res.gyro(2);
+  debugData["state"] = toJson(_filter);
+
+  res.gyroAcc = rad2deg(_filter.x);
   res.jsonDebugData["kf"] = debugData;
 }
 

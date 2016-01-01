@@ -118,7 +118,7 @@ public:
   }
 
 
-  void fake_update() {
+  void nop_update() {
       x = x_;
       P = P_;
       updated = true;
@@ -159,6 +159,8 @@ private:
   bool _enabled;
   std::set<AxisFilter> _axisToFilter;
   vector3_t _accDeviation;
+  double _accLengthThreshold;
+  double _atanThreshold;
 };
 
 std::ostream& operator<<(std::ostream& os, const IMUKalmanFilter::AxisFilter& axis);
