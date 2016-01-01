@@ -42,3 +42,7 @@
 .pressed {
     background-color: #888888;
 }
+
+.legend-entry.disabled {
+    background-color: #777777;
+}

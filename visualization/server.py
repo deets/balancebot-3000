@@ -1,5 +1,6 @@
 import os
-import threading
+import time
+import tempfile
 from functools import partial
 
 import tornado.ioloop
@@ -12,6 +13,7 @@ import nanomsg
 
 define("port", default=12345, help="run on the given port", type=int)
 define("uri", default="tcp://192.168.2.102:5555", help="pull data from that pair socket", type=str)
+define("split", default=False, help="split out incoming data into file")
 
 class IndexHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -42,14 +44,28 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             del self.CLIENTS[self.id]
 
 
-def imu_message_arrived(socket, *args):
+def imu_message_arrived(socket, split_write, *args):
     message = socket.recv()
+    split_write(message)
     for wsh in WebSocketHandler.CLIENTS.values():
         wsh["write_message"](message)
 
 
 def main():
     parse_command_line()
+
+    if options.split:
+        split_file = tempfile.mktemp(suffix="-mpu6050.log")
+        print("Writing data to '%s'" % split_file)
+        outf = open(split_file, 'wb')
+        then = time.time()
+        def split_write(message):
+            outf.write(b"#" * 10)
+            outf.write(b"\n")
+            outf.write(message)
+    else:
+        def split_write(_message):
+            pass
 
     settings = {
         "static_path": os.path.join(os.path.dirname(__file__), "static"),
@@ -64,14 +80,17 @@ def main():
     )
 
     socket = nanomsg.Socket(nanomsg.PAIR)
+    print("Connecting to nanomsg on '%s'" % options.uri)
     socket.connect(options.uri)
-
+    print("Server listening on 'http://localhost:%i/'" % options.port)
     app.listen(options.port)
     ioloop = tornado.ioloop.IOLoop.instance()
 
+
+
     ioloop.add_handler(
         socket.fd,
-        partial(imu_message_arrived, socket),
+        partial(imu_message_arrived, socket, split_write),
         tornado.ioloop.IOLoop.READ | tornado.ioloop.IOLoop.WRITE | tornado.ioloop.IOLoop.ERROR
         )
     ioloop.start()

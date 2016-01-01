@@ -63,6 +63,9 @@ function setupGraph(root, options) {
             var xextents = [];
             var yextents = [];
             _.each(lines, function(line) {
+                if(!line._enabled) {
+                    return;
+                }
                 xextents = xextents.concat(d3.extent(data, line.xf));
                 yextents = yextents.concat(d3.extent(data, line.yf));
                 if(line.config.global_minmax && line.config.first_data) {
@@ -75,8 +78,13 @@ function setupGraph(root, options) {
             xAxisNode.call(xAxis);
             yAxisNode.call(yAxis);
             _.each(lines, function(line) {
-                svg.select("#" + line.id)   // change the line
-                    .attr("d", line.line(data));
+                var lsvg = svg.select("#" + line.id);
+                if(line._enabled) {
+                    // change the line
+                    lsvg.attr("d", line.line(data));
+                } else {
+                    lsvg.attr("d", "");
+                }
             });
         },
 
@@ -107,7 +115,15 @@ function setupGraph(root, options) {
                 yf : yf,
                 line : line,
                 id : id,
-                config : config
+                _enabled: true,
+                config : config,
+                enable : function(enable) {
+                    if(enable !== undefined) {
+                        this._enabled = enable;
+                        line_bus.push(this);
+                    }
+                    return this._enabled;
+                }
             });
             line_bus.push(lines[lines.length -1]);
             return self;
