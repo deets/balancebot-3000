@@ -33,3 +33,21 @@ struct json_converter<vector3_t> {
     return vecJ;
   }
 };
+
+template<int Rows, int Cols, typename FloatT>
+struct json_converter<Eigen::Matrix<FloatT, Rows, Cols>> {
+  using MatrixT = Eigen::Matrix<FloatT, Rows, Cols>;
+  static Json::Value toJson(const MatrixT& m) {
+    Json::Value res(Json::arrayValue);
+    res.resize(Rows);
+    for(int i=0; i < Rows; i++) {
+      Json::Value row(Json::arrayValue);
+      row.resize(Cols);
+      for(int j=0; j < Cols; j++) {
+	row[j] = m(i, j);
+      }
+      res[i] = row;
+    }
+    return res;
+  }
+};

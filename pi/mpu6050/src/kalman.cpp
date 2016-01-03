@@ -3,8 +3,10 @@
 template<int A, int B, int C, typename FloatT>
 struct json_converter<KalmanFilter<A, B, C, FloatT>> {
 
-  static Json::Value toJson(const KalmanFilter<A, B, C, FloatT>&) {
+  static Json::Value toJson(const KalmanFilter<A, B, C, FloatT>& kf) {
     auto res = Json::Value(Json::objectValue);
+    res["x"] = ::toJson(kf.x);
+    res["P"] = ::toJson(kf.P);
     return res;
   }
 };
