@@ -1,7 +1,5 @@
+#!/bin/bash
 
-for spin in *.spin; 
-do
-    openspin -Llib $spin
-done
+openspin -Llib $1.spin
 
-sudo ~/software/vc/propeller-hat/software/p1load/p1load test.binary
+sudo ~/software/vc/propeller-hat/software/p1load/p1load $1.binary
