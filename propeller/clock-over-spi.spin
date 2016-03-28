@@ -5,32 +5,19 @@ CON
   LED_PIN = 0 ' Use pin A0
   SCLK_PIN = 1
   MISO_PIN = 2
+  MOSI_PIN = 4
   CE_PIN = 5
 VAR 
-    LONG clock
+    LONG outdata
     BYTE data
+    BYTE inbyte
+    LONG indata
 OBJ 
+    spi: "spi-dispatch" 
 PUB main
-    DIRA[LED_PIN] := 1 ' Set the LED pin to an output
-    DIRA[SCLK_PIN] := 0
-    DIRA[CE_PIN] := 0
-    DIRA[MISO_PIN] := 1
-    repeat
-       ' wait for chip enaple
-       repeat until not ina[CE_PIN]
-       outa[LED_PIN] := 1
-       clock := CNT
 
-       repeat 4
-       	      data := clock >< 8 
-              clock >>= 8
-              OUTA[MISO_PIN] := data & 1
-              repeat 8
-        	      repeat until ina[SCLK_PIN]      	  	     
-                      data >>= 1
-                      repeat until not ina[SCLK_PIN]
-                      OUTA[MISO_PIN] := data & 1
-
-       repeat until ina[CE_PIN]
-       outa[LED_PIN] := 0
+    spi.Start(SCLK_PIN, MOSI_PIN, MISO_PIN, CE_PIN)
+    repeat              
+        waitcnt(cnt + CLKFREQ / 10)
+        spi.TestSend
 
