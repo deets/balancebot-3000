@@ -1,5 +1,7 @@
 {
-    "enabled": false,
+    "enabled": true,
     "axisToFilter": ["x", "y"],
-    "accStdDev": [0.0053180252908774988, 0.0043872305737932653, 0.025965087759240363]
+    "accStdDev": [0.0053180252908774988, 0.0043872305737932653, 0.025965087759240363],
+    "accLengthThreshold" : 0.1,
+    "atanThreshold" : 0.1
 }
